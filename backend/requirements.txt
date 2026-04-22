@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+sqlmodel
+psycopg2-binary
+python-dotenv
+pydantic
+pydantic-settings
+python-multipart
+asyncpg
