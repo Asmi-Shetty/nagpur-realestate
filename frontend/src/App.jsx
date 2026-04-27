@@ -4,47 +4,64 @@ import ListingPage from './pages/ListingPage';
 import DetailPage from './pages/DetailPage';
 import SellPage from './pages/SellPage';
 import ProjectPage from './pages/ProjectPage';
+import RentPage from './pages/RentPage';
+import { Bell, User, Heart as HeartIcon } from 'lucide-react';
 
 const Navbar = ({ onNavigate, currentPage }) => {
   return (
-    <nav className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 sticky top-0 z-50">
-      <div 
-        className="text-[28px] font-medium text-[#14532d] flex items-center gap-2 cursor-pointer tracking-tighter"
-        onClick={() => onNavigate('home')}
-      >
-        <span>NagpurHomes</span>
+    <nav className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-50 sticky top-0 z-50">
+      <div className="flex items-center gap-12">
+        <div 
+          className="text-[24px] font-bold text-[#1e3a8a] flex items-center gap-2 cursor-pointer tracking-tight"
+          onClick={() => onNavigate('home')}
+        >
+          <span className="text-[#14532d]">Parth</span><span className="text-[#0f172a]">Developer</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8 text-gray-500 font-medium text-[13px]">
+          <button 
+            onClick={() => onNavigate('rent')}
+            className={`${currentPage === 'rent' ? 'text-[#14532d] border-b-2 border-[#14532d]' : 'hover:text-[#14532d]'} transition-all pb-1 px-1`}
+          >
+            Rent
+          </button>
+          <button 
+            onClick={() => onNavigate('listing')}
+            className={`${currentPage === 'listing' ? 'text-[#14532d] border-b-2 border-[#14532d]' : 'hover:text-[#14532d]'} transition-all pb-1 px-1`}
+          >
+            Buy
+          </button>
+          <button 
+            onClick={() => onNavigate('sell')}
+            className={`${currentPage === 'sell' ? 'text-[#14532d] border-b-2 border-[#14532d]' : 'hover:text-[#14532d]'} transition-all pb-1 px-1`}
+          >
+            Sell
+          </button>
+          <button 
+            onClick={() => onNavigate('projects')}
+            className={`${currentPage === 'projects' ? 'text-[#14532d] border-b-2 border-[#14532d]' : 'hover:text-[#14532d]'} transition-all pb-1 px-1`}
+          >
+            New Projects
+          </button>
+          <button className="hover:text-[#14532d] transition-all pb-1 px-1">Commercial</button>
+        </div>
       </div>
-      <div className="hidden md:flex items-center gap-10 text-gray-400 font-medium text-xs uppercase tracking-widest pl-24">
-        <button 
-          onClick={() => onNavigate('listing')}
-          className={`${currentPage === 'listing' ? 'text-[#14532d] relative' : 'hover:text-[#14532d]'} transition-all pb-1`}
-        >
-          Buy
-          {currentPage === 'listing' && <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#14532d] rounded-full" />}
-        </button>
-        <button className="hover:text-[#14532d] transition-colors pb-1">Rent</button>
-        <button 
-          onClick={() => onNavigate('sell')}
-          className={`${currentPage === 'sell' ? 'text-[#14532d] relative' : 'hover:text-[#14532d]'} transition-all pb-1`}
-        >
-          Sell
-          {currentPage === 'sell' && <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#14532d] rounded-full" />}
-        </button>
-        <button 
-          onClick={() => onNavigate('projects')}
-          className={`${currentPage === 'projects' ? 'text-[#14532d] relative' : 'hover:text-[#14532d]'} transition-all pb-1`}
-        >
-          Projects
-          {currentPage === 'projects' && <div className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#14532d] rounded-full" />}
-        </button>
-      </div>
+      
       <div className="flex items-center gap-6">
-        <button className="text-gray-400 hover:text-[#14532d] transition-colors p-2">
-          <Search size={22} strokeWidth={2.5} />
+        <button className="bg-[#14532d] text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#0f4022] transition-all active:scale-95">
+          Post Property
         </button>
-        <button className="bg-[#0f172a] text-white px-8 py-3 rounded-xl font-medium text-sm hover:bg-black transition-all shadow-lg active:scale-95">
-          Login
-        </button>
+        <div className="flex items-center gap-5 text-gray-400">
+          <button className="hover:text-[#14532d] transition-colors relative">
+            <Bell size={20} />
+            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+          </button>
+          <button className="hover:text-[#14532d] transition-colors">
+            <HeartIcon size={20} />
+          </button>
+          <button className="hover:text-[#14532d] transition-colors bg-gray-100 p-2 rounded-full">
+            <User size={20} />
+          </button>
+        </div>
       </div>
     </nav>
   );
@@ -234,6 +251,8 @@ const App = () => {
     switch (currentPage) {
       case 'listing':
         return <ListingPage onPropertyClick={handlePropertyClick} />;
+      case 'rent':
+        return <RentPage />;
       case 'detail':
         return <DetailPage property={selectedProperty} onBack={() => setCurrentPage('listing')} />;
       case 'sell':
@@ -338,8 +357,8 @@ const App = () => {
       <footer className="border-t py-12">
         <div className="container mx-auto px-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-xs gap-8">
           <div>
-            <span className="font-medium text-gray-800 text-lg">NagpurHomes</span>
-            <p className="mt-2 text-gray-400">© 2024 NagpurHomes. Stability & Local Reliability in Real Estate.</p>
+            <span className="font-medium text-gray-800 text-lg">ParthDeveloper</span>
+            <p className="mt-2 text-gray-400">© 2024 ParthDeveloper. Stability & Local Reliability in Real Estate.</p>
           </div>
           <div className="flex gap-8">
             <a href="#" className="hover:text-primary">About Nagpur</a>
