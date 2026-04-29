@@ -42,7 +42,6 @@ const Navbar = ({ onNavigate, currentPage }) => {
           >
             New Projects
           </button>
-          <button className="hover:text-[#14532d] transition-all pb-1 px-1">Commercial</button>
         </div>
       </div>
       
@@ -67,7 +66,57 @@ const Navbar = ({ onNavigate, currentPage }) => {
   );
 };
 
+const Dropdown = ({ label, value, options, isOpen, onToggle, onSelect }) => {
+  return (
+    <div className="relative flex-1 w-full">
+      <div 
+        onClick={onToggle}
+        className="w-full px-6 py-3 hover:bg-white/50 rounded-2xl transition-all cursor-pointer group h-full flex flex-col justify-center"
+      >
+        <span className="block text-gray-500 text-[9px] uppercase font-medium mb-1 tracking-[0.2em] opacity-60">{label}</span>
+        <div className="flex items-center justify-between">
+          <span className="text-gray-900 font-medium text-[15px] whitespace-nowrap overflow-hidden text-ellipsis">{value}</span>
+          <ChevronDown size={14} className={`text-gray-400 group-hover:text-primary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-full min-w-[200px] bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+          {options.map(opt => (
+            <div 
+              key={opt}
+              onClick={() => onSelect(opt)}
+              className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors ${value === opt ? 'text-[#14532d] font-medium bg-green-50/50' : 'text-gray-700'}`}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Hero = ({ onSearch }) => {
+  const [location, setLocation] = useState('Dharampeth');
+  const [bhk, setBhk] = useState('2 BHK');
+  const [budget, setBudget] = useState('₹40L - ₹60L');
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const locations = ['Any', 'Dharampeth', 'Manish Nagar', 'Civil Lines', 'Wardha Road', 'Ganeshpeth', 'Jamtha', 'Besa', 'Pratap Nagar'];
+  const bhks = ['Any', '1 BHK', '2 BHK', '3 BHK', '4+ BHK'];
+  const budgets = ['Any', 'Under ₹40L', '₹40L - ₹60L', '₹60L - ₹1Cr', 'Above ₹1Cr'];
+
   return (
     <div className="relative h-[650px] w-full overflow-hidden bg-[#faf7f2]">
       {/* Background Monument Image */}
@@ -94,33 +143,36 @@ const Hero = ({ onSearch }) => {
             Explore premium residential projects and verified local listings across the Orange City's most sought-after neighborhoods.
           </p>
           
-          <div className="bg-[#fefce8]/90 backdrop-blur-md shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] rounded-[32px] p-2 flex flex-col md:flex-row items-center gap-1 max-w-2xl border border-white/40">
-            <div className="flex-1 w-full px-6 py-3 hover:bg-white/50 rounded-2xl transition-all cursor-pointer group">
-              <span className="block text-gray-500 text-[9px] uppercase font-medium mb-1 tracking-[0.2em] opacity-60">Location</span>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-900 font-medium text-[15px]">Dharampeth</span>
-                <ChevronDown size={14} className="text-gray-400 group-hover:text-primary" />
-              </div>
-            </div>
-            <div className="w-px h-10 bg-gray-200/50 hidden md:block" />
-            <div className="flex-1 w-full px-6 py-3 hover:bg-white/50 rounded-2xl transition-all cursor-pointer group">
-              <span className="block text-gray-500 text-[9px] uppercase font-medium mb-1 tracking-[0.2em] opacity-60">Configuration</span>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-900 font-medium text-[15px]">2 BHK</span>
-                <ChevronDown size={14} className="text-gray-400 group-hover:text-primary" />
-              </div>
-            </div>
-            <div className="w-px h-10 bg-gray-200/50 hidden md:block" />
-            <div className="flex-1 w-full px-6 py-3 hover:bg-white/50 rounded-2xl transition-all cursor-pointer group">
-              <span className="block text-gray-500 text-[9px] uppercase font-medium mb-1 tracking-[0.2em] opacity-60">Budget</span>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-900 font-medium text-[15px]">₹40L - ₹60L</span>
-                <ChevronDown size={14} className="text-gray-400 group-hover:text-primary" />
-              </div>
-            </div>
+          <div className="search-container bg-[#fefce8]/90 backdrop-blur-md shadow-[0_30px_60px_-15px_rgba(0,0,0,0.2)] rounded-[32px] p-2 flex flex-col md:flex-row items-stretch gap-1 max-w-2xl border border-white/40">
+            <Dropdown 
+              label="Location"
+              value={location}
+              options={locations}
+              isOpen={openDropdown === 'location'}
+              onToggle={() => setOpenDropdown(openDropdown === 'location' ? null : 'location')}
+              onSelect={(val) => { setLocation(val); setOpenDropdown(null); }}
+            />
+            <div className="w-px bg-gray-200/50 hidden md:block my-2" />
+            <Dropdown 
+              label="Configuration"
+              value={bhk}
+              options={bhks}
+              isOpen={openDropdown === 'bhk'}
+              onToggle={() => setOpenDropdown(openDropdown === 'bhk' ? null : 'bhk')}
+              onSelect={(val) => { setBhk(val); setOpenDropdown(null); }}
+            />
+            <div className="w-px bg-gray-200/50 hidden md:block my-2" />
+            <Dropdown 
+              label="Budget"
+              value={budget}
+              options={budgets}
+              isOpen={openDropdown === 'budget'}
+              onToggle={() => setOpenDropdown(openDropdown === 'budget' ? null : 'budget')}
+              onSelect={(val) => { setBudget(val); setOpenDropdown(null); }}
+            />
             <button 
-              onClick={onSearch}
-              className="bg-[#14532d] text-white p-5 rounded-[24px] hover:bg-[#0f4022] transition-all shadow-xl hover:scale-105 active:scale-95 m-1"
+              onClick={() => onSearch({ location, bhk, budget })}
+              className="bg-[#14532d] text-white p-5 rounded-[24px] hover:bg-[#0f4022] transition-all shadow-xl hover:scale-105 active:scale-95 m-1 z-10 self-center"
             >
               <Search size={22} strokeWidth={2} />
             </button>
