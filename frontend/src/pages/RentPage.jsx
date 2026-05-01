@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Heart, MapPin, Share2, ChevronDown, Check, Search, Bell, User, X, Phone } from 'lucide-react';
 
-const RentPage = () => {
+const RentPage = ({ savedProperties = [], onToggleSave }) => {
   const [rentalTypes, setRentalTypes] = useState(['Apartment']);
   const [rentRange, setRentRange] = useState(150000);
   const [furnishing, setFurnishing] = useState('Semi-furnished');
@@ -101,6 +101,24 @@ const RentPage = () => {
     setFurnishing('');
     setPreferredTenants([]);
     setSelectedAmenities([]);
+  };
+
+  const handleShare = async (prop, e) => {
+    e.stopPropagation();
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: prop.title,
+          text: `Check out this property: ${prop.title} for ${prop.price}`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(`Check out this property: ${prop.title} for ${prop.price} at ${window.location.href}`);
+        alert("Property details copied to clipboard!");
+      }
+    } catch (error) {
+      console.log('Error sharing', error);
+    }
   };
 
   return (
@@ -246,68 +264,77 @@ const RentPage = () => {
                </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProperties.map((prop) => (
-                  <div key={prop.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden flex flex-col h-full border-t-0 ring-1 ring-gray-50">
-                    <div className="relative h-48 overflow-hidden">
-                      <div className="absolute top-4 left-4 z-20 flex gap-2">
-                         {prop.isVerified && (
-                           <div className="bg-[#14532d] text-white text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm bg-opacity-90">
-                             <Check size={8} strokeWidth={4} /> Verified
-                           </div>
-                         )}
-                         {prop.isNewLaunch && (
-                           <div className="bg-[#1e293b] text-white text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest opacity-90 backdrop-blur-sm">
-                             New Launch
-                           </div>
-                         )}
+                {filteredProperties.map((prop) => {
+                  const isSaved = savedProperties.some(p => p.id === prop.id);
+                  return (
+                    <div key={prop.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden flex flex-col h-full border-t-0 ring-1 ring-gray-50">
+                      <div className="relative h-48 overflow-hidden">
+                        <div className="absolute top-4 left-4 z-20 flex gap-2">
+                           {prop.isVerified && (
+                             <div className="bg-[#14532d] text-white text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest flex items-center gap-1 backdrop-blur-sm bg-opacity-90">
+                               <Check size={8} strokeWidth={4} /> Verified
+                             </div>
+                           )}
+                           {prop.isNewLaunch && (
+                             <div className="bg-[#1e293b] text-white text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest opacity-90 backdrop-blur-sm">
+                               New Launch
+                             </div>
+                           )}
+                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); if(onToggleSave) onToggleSave(prop); }}
+                          className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-md p-2 rounded-full text-gray-800 hover:text-red-500 transition-all shadow-lg active:scale-90"
+                        >
+                          <Heart size={16} fill={isSaved ? "#ef4444" : "none"} className={isSaved ? "text-red-500 stroke-[2px]" : "stroke-[2.5px]"} />
+                        </button>
+                        <img 
+                          src={prop.image} 
+                          alt={prop.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        />
                       </div>
-                      <button className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-md p-2 rounded-full text-gray-800 hover:text-red-500 transition-all shadow-lg">
-                        <Heart size={16} className="stroke-[2.5px]" />
-                      </button>
-                      <img 
-                        src={prop.image} 
-                        alt={prop.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                      />
-                    </div>
 
-                    <div className="p-5 flex flex-col flex-1 bg-[#fffdf9]">
-                      <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-lg font-semibold text-[#0f172a] leading-tight pr-2">{prop.title}</h2>
-                        <div className="text-right shrink-0">
-                          <div className="text-xl font-bold text-[#14532d] leading-none mb-1">{prop.price} <span className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">/mo</span></div>
-                          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Dep: {prop.deposit}</div>
+                      <div className="p-5 flex flex-col flex-1 bg-[#fffdf9]">
+                        <div className="flex justify-between items-start mb-4">
+                          <h2 className="text-lg font-semibold text-[#0f172a] leading-tight pr-2">{prop.title}</h2>
+                          <div className="text-right shrink-0">
+                            <div className="text-xl font-bold text-[#14532d] leading-none mb-1">{prop.price} <span className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">/mo</span></div>
+                            <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Dep: {prop.deposit}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-gray-500 mb-5 font-medium">
+                          <MapPin size={14} className="text-gray-300 shrink-0" />
+                          <span className="text-xs truncate">{prop.location}</span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mb-6">
+                          {prop.tags.slice(0, 3).map((tag) => (
+                            <span key={tag} className="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-1 rounded uppercase tracking-tight">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="mt-auto flex gap-2">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setContactModal({ isOpen: true, property: prop }); }}
+                            className="flex-1 bg-[#14532d] text-white py-3 rounded-xl font-bold text-xs hover:bg-[#0f4022] transition-all shadow-lg shadow-green-900/10 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                          >
+                            <Phone size={14} />
+                            {prop.contactType}
+                          </button>
+                          <button 
+                            onClick={(e) => handleShare(prop, e)}
+                            className="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all text-gray-500 active:scale-95"
+                          >
+                            <Share2 size={16} />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-1.5 text-gray-500 mb-5 font-medium">
-                        <MapPin size={14} className="text-gray-300 shrink-0" />
-                        <span className="text-xs truncate">{prop.location}</span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5 mb-6">
-                        {prop.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="bg-gray-100 text-gray-500 text-[9px] font-bold px-2 py-1 rounded uppercase tracking-tight">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="mt-auto flex gap-2">
-                        <button 
-                          onClick={() => setContactModal({ isOpen: true, property: prop })}
-                          className="flex-1 bg-[#14532d] text-white py-3 rounded-xl font-bold text-xs hover:bg-[#0f4022] transition-all shadow-lg shadow-green-900/10 flex items-center justify-center gap-1.5 active:scale-[0.98]"
-                        >
-                          <Phone size={14} />
-                          {prop.contactType}
-                        </button>
-                        <button className="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all text-gray-500 active:scale-95">
-                          <Share2 size={16} />
-                        </button>
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </main>

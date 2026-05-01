@@ -1,8 +1,26 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, ChevronDown, Heart, MapPin, Square, Bed, Calendar, Check, Zap, X, User, Phone } from 'lucide-react';
+import { Search, Filter, ChevronDown, Heart, MapPin, Square, Bed, Calendar, Check, Zap, X, User, Phone, Share2 } from 'lucide-react';
 
-const PropertyCard = ({ property, onClick, onContactClick }) => {
-  const [saved, setSaved] = useState(false);
+const PropertyCard = ({ property, onClick, onContactClick, savedProperties = [], onToggleSave }) => {
+  const isSaved = savedProperties.some(p => p.id === property.id);
+
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: property.title,
+          text: `Check out this property: ${property.title} for ${property.price}`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(`Check out this property: ${property.title} for ${property.price} at ${window.location.href}`);
+        alert("Property details copied to clipboard!");
+      }
+    } catch (error) {
+      console.log('Error sharing', error);
+    }
+  };
 
   return (
     <div 
@@ -24,10 +42,10 @@ const PropertyCard = ({ property, onClick, onContactClick }) => {
           )}
         </div>
         <button 
-          onClick={(e) => { e.stopPropagation(); setSaved(!saved); }}
+          onClick={(e) => { e.stopPropagation(); if (onToggleSave) onToggleSave(property); }}
           className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-md p-2 rounded-full text-gray-800 hover:text-red-500 transition-all shadow-lg active:scale-90"
         >
-          <Heart size={16} fill={saved ? "#ef4444" : "none"} className={saved ? "text-red-500 stroke-[2px]" : "stroke-[2.5px]"} />
+          <Heart size={16} fill={isSaved ? "#ef4444" : "none"} className={isSaved ? "text-red-500 stroke-[2px]" : "stroke-[2.5px]"} />
         </button>
         <img 
           src={property.image} 
@@ -65,18 +83,26 @@ const PropertyCard = ({ property, onClick, onContactClick }) => {
           </div>
         </div>
 
-        <button 
-          onClick={(e) => { e.stopPropagation(); onContactClick(property); }}
-          className="mt-auto w-full bg-[#14532d] text-white py-3 rounded-xl font-bold text-xs hover:bg-[#0f4022] transition-all shadow-lg shadow-green-900/10 active:scale-[0.98]"
-        >
-          {property.contactType || 'Contact Seller'}
-        </button>
+        <div className="mt-auto flex gap-2">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onContactClick(property); }}
+            className="flex-1 bg-[#14532d] text-white py-3 rounded-xl font-bold text-xs hover:bg-[#0f4022] transition-all shadow-lg shadow-green-900/10 flex justify-center items-center gap-1.5 active:scale-[0.98]"
+          >
+            {property.contactType || 'Contact Seller'}
+          </button>
+          <button 
+            onClick={handleShare}
+            className="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all text-gray-500 active:scale-95"
+          >
+            <Share2 size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-const ListingPage = ({ onPropertyClick }) => {
+const ListingPage = ({ onPropertyClick, savedProperties = [], onToggleSave }) => {
   const [activePropertyType, setActivePropertyType] = useState('');
   const [activeBHK, setActiveBHK] = useState(null);
   const [priceRange, setPriceRange] = useState(50000000); // 5 Cr initially
@@ -317,6 +343,8 @@ const ListingPage = ({ onPropertyClick }) => {
                   property={property} 
                   onClick={onPropertyClick} 
                   onContactClick={(prop) => setContactModal({ isOpen: true, property: prop })}
+                  savedProperties={savedProperties}
+                  onToggleSave={onToggleSave}
                 />
               ))}
             </div>

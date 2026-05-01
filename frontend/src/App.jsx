@@ -7,7 +7,27 @@ import ProjectPage from './pages/ProjectPage';
 import RentPage from './pages/RentPage';
 import { Bell, User, Heart as HeartIcon } from 'lucide-react';
 
-const Navbar = ({ onNavigate, currentPage }) => {
+const Navbar = ({ onNavigate, currentPage, savedProperties = [] }) => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+
+  const toggleDropdown = (dropdown) => {
+    if (dropdown === 'notifications') {
+      setShowNotifications(!showNotifications);
+      setShowSaved(false);
+      setShowProfile(false);
+    } else if (dropdown === 'saved') {
+      setShowSaved(!showSaved);
+      setShowNotifications(false);
+      setShowProfile(false);
+    } else if (dropdown === 'profile') {
+      setShowProfile(!showProfile);
+      setShowNotifications(false);
+      setShowSaved(false);
+    }
+  };
+
   return (
     <nav className="flex items-center justify-between px-8 py-5 bg-white border-b border-gray-50 sticky top-0 z-50">
       <div className="flex items-center gap-12">
@@ -46,20 +66,100 @@ const Navbar = ({ onNavigate, currentPage }) => {
       </div>
       
       <div className="flex items-center gap-6">
-        <button className="bg-[#14532d] text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#0f4022] transition-all active:scale-95">
+        <button 
+          onClick={() => onNavigate('sell')}
+          className="bg-[#14532d] text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#0f4022] transition-all active:scale-95"
+        >
           Post Property
         </button>
         <div className="flex items-center gap-5 text-gray-400">
-          <button className="hover:text-[#14532d] transition-colors relative">
-            <Bell size={20} />
-            <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-          </button>
-          <button className="hover:text-[#14532d] transition-colors">
-            <HeartIcon size={20} />
-          </button>
-          <button className="hover:text-[#14532d] transition-colors bg-gray-100 p-2 rounded-full">
-            <User size={20} />
-          </button>
+          
+          <div className="relative">
+            <button 
+              onClick={() => toggleDropdown('notifications')}
+              className={`transition-colors relative ${showNotifications ? 'text-[#14532d]' : 'hover:text-[#14532d]'}`}
+            >
+              <Bell size={20} />
+              <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 mt-4 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 z-50 animate-in slide-in-from-top-2 duration-200">
+                <h4 className="font-semibold text-gray-900 mb-4">Notifications</h4>
+                <div className="space-y-3">
+                  <div className="bg-[#f0fdf4] border border-[#dcfce7] p-3 rounded-xl cursor-pointer hover:shadow-sm transition-all">
+                    <p className="text-xs text-gray-800 font-medium mb-1">New property match in Dharampeth!</p>
+                    <span className="text-[10px] text-[#166534] font-medium">Just now</span>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-100 p-3 rounded-xl cursor-pointer hover:shadow-sm transition-all">
+                    <p className="text-xs text-gray-800 font-medium mb-1">Price drop on Godrej Anandam</p>
+                    <span className="text-[10px] text-gray-400">1 day ago</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            <button 
+              onClick={() => toggleDropdown('saved')}
+              className={`transition-colors relative ${showSaved ? 'text-[#14532d]' : 'hover:text-[#14532d]'}`}
+            >
+              <HeartIcon size={20} />
+              {savedProperties.length > 0 && (
+                <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border-2 border-white">
+                  {savedProperties.length}
+                </div>
+              )}
+            </button>
+            {showSaved && (
+              <div className="absolute right-0 mt-4 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 z-50 animate-in slide-in-from-top-2 duration-200">
+                <h4 className="font-semibold text-gray-900 mb-4">Saved Properties</h4>
+                {savedProperties.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="bg-gray-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <HeartIcon size={20} className="text-gray-300" />
+                    </div>
+                    <p className="text-gray-500 text-xs font-medium">No properties saved yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {savedProperties.map(prop => (
+                      <div key={prop.id} className="flex gap-4 items-center group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+                        <img src={prop.image} className="w-12 h-12 rounded-lg object-cover" alt={prop.title} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{prop.title}</p>
+                          <p className="text-xs text-[#14532d] font-bold">{prop.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            <button 
+              onClick={() => toggleDropdown('profile')}
+              className={`transition-colors p-2 rounded-full ${showProfile ? 'bg-[#14532d] text-white' : 'bg-gray-100 hover:text-[#14532d]'}`}
+            >
+              <User size={20} />
+            </button>
+            {showProfile && (
+              <div className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-50 animate-in slide-in-from-top-2 duration-200">
+                <div className="px-5 py-3 border-b border-gray-50 mb-2">
+                  <div className="font-semibold text-gray-900 text-sm">John Doe</div>
+                  <div className="text-xs text-gray-400 font-medium">john@example.com</div>
+                </div>
+                <button className="w-full text-left px-5 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#14532d] transition-colors">My Profile</button>
+                <button className="w-full text-left px-5 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#14532d] transition-colors">My Listings</button>
+                <button className="w-full text-left px-5 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-[#14532d] transition-colors">Settings</button>
+                <div className="h-px bg-gray-100 my-2" />
+                <button className="w-full text-left px-5 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors">Sign Out</button>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </nav>
@@ -119,9 +219,7 @@ const Hero = ({ onSearch }) => {
 
   return (
     <div className="relative h-[650px] w-full overflow-hidden bg-[#faf7f2]">
-      {/* Background Monument Image */}
       <div className="absolute inset-x-0 top-0 h-[600px] overflow-hidden">
-        {/* Warm Sunset Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-[#f97316]/50 via-[#fbbf24]/40 to-transparent z-10" />
         <div className="absolute inset-0 bg-black/10 z-0" />
         <img 
@@ -179,7 +277,6 @@ const Hero = ({ onSearch }) => {
           </div>
         </div>
 
-        {/* Floating Room Image */}
         <div className="hidden lg:block w-[450px] aspect-[4/5] relative pt-5 -translate-x-10">
            <div className="absolute inset-x-0 h-full bg-[#14532d]/5 rounded-[32px] translate-x-4 translate-y-4" />
            <img 
@@ -228,10 +325,21 @@ const LocalityCard = ({ name, tagline, icon: IconComponent }) => (
 );
 
 const App = () => {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'listing', 'detail'
+  const [currentPage, setCurrentPage] = useState('home');
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [properties, setProperties] = useState([]);
   const [localities, setLocalities] = useState([]);
+  const [savedProperties, setSavedProperties] = useState([]);
+
+  const toggleSaveProperty = (property) => {
+    setSavedProperties(prev => {
+      const isSaved = prev.some(p => p.id === property.id);
+      if (isSaved) {
+        return prev.filter(p => p.id !== property.id);
+      }
+      return [...prev, property];
+    });
+  };
 
   useEffect(() => {
     fetch('http://localhost:8000/api/properties')
@@ -302,9 +410,9 @@ const App = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'listing':
-        return <ListingPage onPropertyClick={handlePropertyClick} />;
+        return <ListingPage onPropertyClick={handlePropertyClick} savedProperties={savedProperties} onToggleSave={toggleSaveProperty} />;
       case 'rent':
-        return <RentPage />;
+        return <RentPage savedProperties={savedProperties} onToggleSave={toggleSaveProperty} />;
       case 'detail':
         return <DetailPage property={selectedProperty} onBack={() => setCurrentPage('listing')} />;
       case 'sell':
@@ -404,7 +512,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900">
-      <Navbar onNavigate={setCurrentPage} currentPage={currentPage} />
+      <Navbar onNavigate={setCurrentPage} currentPage={currentPage} savedProperties={savedProperties} />
       {renderPage()}
       <footer className="border-t py-12">
         <div className="container mx-auto px-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-xs gap-8">
